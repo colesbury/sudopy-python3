@@ -145,6 +145,8 @@ def shuffled(seq):
 ################ System test ################
 
 import time, random
+from concurrent.futures import ThreadPoolExecutor
+
 
 def solve_all(grids, name='', showif=0.0):
     """Attempt to solve a sequence of grids. Report results.
@@ -160,7 +162,8 @@ def solve_all(grids, name='', showif=0.0):
             if values: display(values)
             print('(%.2f seconds)\n' % t)
         return (t, solved(values))
-    times, results = list(zip(*[time_solve(grid) for grid in grids]))
+    with ThreadPoolExecutor() as e:
+        times, results = zip(*e.map(time_solve, grids))
     N = len(grids)
     if N > 1:
         print("Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
