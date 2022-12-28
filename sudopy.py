@@ -41,7 +41,7 @@ def test():
     assert peers['C2'] == set(['A2', 'B2', 'D2', 'E2', 'F2', 'G2', 'H2', 'I2',
                                'C1', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9',
                                'A1', 'A3', 'B1', 'B3'])
-    print 'All tests pass.'
+    print('All tests pass.')
 
 ################ Parse a Grid ################
 
@@ -50,7 +50,7 @@ def parse_grid(grid):
     return False if a contradiction is detected."""
     ## To start, every square can be any digit; then assign values from the grid.
     values = dict((s, digits) for s in squares)
-    for s,d in grid_values(grid).items():
+    for s,d in list(grid_values(grid).items()):
         if d in digits and not assign(values, s, d):
             return False ## (Fail if we can't assign d to square s.)
     return values
@@ -59,7 +59,7 @@ def grid_values(grid):
     "Convert grid into a dict of {square: char} with '0' or '.' for empties."
     chars = [c for c in grid if c in digits or c in '0.']
     assert len(chars) == 81
-    return dict(zip(squares, chars))
+    return dict(list(zip(squares, chars)))
 
 ################ Constraint Propagation ################
 
@@ -103,10 +103,10 @@ def display(values):
     width = 1+max(len(values[s]) for s in squares)
     line = '+'.join(['-'*(width*3)]*3)
     for r in rows:
-        print ''.join(values[r+c].center(width)+('|' if c in '36' else '')
-                      for c in cols)
-        if r in 'CF': print line
-    print
+        print(''.join(values[r+c].center(width)+('|' if c in '36' else '')
+                      for c in cols))
+        if r in 'CF': print(line)
+    print()
 
 ################ Search ################
 
@@ -133,7 +133,8 @@ def some(seq):
 
 def from_file(filename, sep='\n'):
     "Parse a file into a list of strings, separated by sep."
-    return file(filename).read().strip().split(sep)
+    with open(filename) as f:
+        return f.read().strip().split(sep)
 
 def shuffled(seq):
     "Return a randomly shuffled copy of the input sequence."
@@ -150,20 +151,20 @@ def solve_all(grids, name='', showif=0.0):
     When showif is a number of seconds, display puzzles that take longer.
     When showif is None, don't display any puzzles."""
     def time_solve(grid):
-        start = time.clock()
+        start = time.time()
         values = solve(grid)
-        t = time.clock()-start
+        t = time.time()-start
         ## Display puzzles that take long enough
         if showif is not None and t > showif:
             display(grid_values(grid))
             if values: display(values)
-            print '(%.2f seconds)\n' % t
+            print('(%.2f seconds)\n' % t)
         return (t, solved(values))
-    times, results = zip(*[time_solve(grid) for grid in grids])
+    times, results = list(zip(*[time_solve(grid) for grid in grids]))
     N = len(grids)
     if N > 1:
-        print "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
-            sum(results), N, name, sum(times)/N, N/sum(times), max(times))
+        print("Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
+            sum(results), N, name, sum(times)/N, N/sum(times), max(times)))
 
 def solved(values):
     "A puzzle is solved if each unit is a permutation of the digits 1 to 9."
@@ -189,7 +190,7 @@ hard1  = '.....6....59.....82....8....45........3........6..3.54...325..6.......
     
 if __name__ == '__main__':
     test()
-    solve_all(from_file("easy50.txt", '========'), "easy", None)
+    solve_all(from_file("easy50.txt"), "easy", None)
     solve_all(from_file("top95.txt"), "hard", None)
     solve_all(from_file("hardest.txt"), "hardest", None)
     solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
