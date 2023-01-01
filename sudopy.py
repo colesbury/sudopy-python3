@@ -148,7 +148,7 @@ import time, random
 from concurrent.futures import ThreadPoolExecutor
 
 
-def solve_all(grids, name='', showif=0.0):
+def solve_all(grids, name='', showif=0.0, nbthreads=1):
     """Attempt to solve a sequence of grids. Report results.
     When showif is a number of seconds, display puzzles that take longer.
     When showif is None, don't display any puzzles."""
@@ -162,7 +162,7 @@ def solve_all(grids, name='', showif=0.0):
             if values: display(values)
             print('(%.2f seconds)\n' % t)
         return (t, solved(values))
-    with ThreadPoolExecutor() as e:
+    with ThreadPoolExecutor(max_workers=nbthreads) as e:
         times, results = zip(*e.map(time_solve, grids))
     N = len(grids)
     if N > 1:
@@ -193,11 +193,22 @@ hard1  = '.....6....59.....82....8....45........3........6..3.54...325..6.......
     
 if __name__ == '__main__':
     test()
-    solve_all(from_file("easy50.txt"), "easy", None)
-    solve_all(from_file("top95.txt"), "hard", None)
-    solve_all(from_file("hardest.txt"), "hardest", None)
-    solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
-
+    #solve_all(from_file("easy50.txt"), "easy", None)
+    #solve_all(from_file("top95.txt"), "hard", None)
+    #solve_all(from_file("hardest.txt"), "hardest", None)
+    #solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
+    test_set =  from_file("hardest.txt") *30
+    thread_list = [ 1, 2, 4, 8, 16]
+    results = []
+    import multiprocessing, sys
+    print(f'On a {multiprocessing.cpu_count()} cpu {sys.version}:')
+    for i in range(len(thread_list)):
+        start_time = time.time()
+        solve_all(test_set, "hardest", None, nbthreads=thread_list[i])
+        results += [time.time() - start_time]
+        print(f'solved {len(test_set)} tests with {thread_list[i]} threads '\
+              f'in {results[-1]:.2f} seconds'\
+              f', {results[0]/results[i]:.2f} speed-up','\n')
 ## References used:
 ## http://www.scanraid.com/BasicStrategies.htm
 ## http://www.sudokudragon.com/sudokustrategy.htm
